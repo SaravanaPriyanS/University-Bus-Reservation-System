@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Bus Reservation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom scrollbar for better UX */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Seat animations */
+        .seat {
+            transition: all 0.3s ease;
+        }
+        .seat:hover:not(.booked) {
+            transform: scale(1.1);
+        }
+        
+        /* Mobile menu animation */
+        .mobile-menu {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-bus text-2xl text-blue-600"></i>
+                    <span class="font-bold text-xl text-gray-800">UniBus Reserve</span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="nav-link flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="#booking" class="nav-link flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-ticket-alt"></i>
+                        <span>Book Ticket</span>
+                    </a>
+                    <a href="#bookings" class="nav-link flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-list"></i>
+                        <span>View Bookings</span>
+                    </a>
+                    <a href="#about" class="nav-link flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About</span>
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <a href="#home" class="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+                <a href="#booking" class="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-ticket-alt mr-2"></i>Book Ticket
+                </a>
+                <a href="#bookings" class="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-list mr-2"></i>View Bookings
+                </a>
+                <a href="#about" class="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <i class="fas fa-info-circle mr-2"></i>About
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="py-20 px-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div class="container mx-auto text-center">
+            <div class="max-w-4xl mx-auto">
+                <i class="fas fa-bus text-6xl text-blue-600 mb-6"></i>
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-6">
+                    University Bus Reservation System
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-8">
+                    Book your bus seats easily, view department-wise timings, and manage your reservations all in one place. 
+                    Experience seamless transportation booking for your university commute.
+                </p>
+                <button onclick="scrollToSection('booking')" class="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                    Book Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="py-16 px-4 bg-white">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Book Your Seat</h2>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white rounded-lg shadow-xl p-6 md:p-8 border border-gray-200">
+                    <!-- Booking Form -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2"></i>Name
+                            </label>
+                            <input type="text" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter your name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Register Number
+                            </label>
+                            <input type="text" id="registerNumber" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter register number">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Department
+                            </label>
+                            <select id="department" onchange="updateTiming()" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Department</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Mechanical">Mechanical</option>
+                                <option value="Civil">Civil</option>
+                                <option value="Electrical">Electrical</option>
+                                <option value="Chemical">Chemical</option>
+                                <option value="Biotechnology">Biotechnology</option>
+                                <option value="Information Technology">Information Technology</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar mr-2"></i>Date
+                            </label>
+                            <input type="date" id="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2"></i>From
+                            </label>
+                            <input type="text" id="from" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Starting point">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2"></i>To
+                            </label>
+                            <input type="text" id="to" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Destination">
+                        </div>
+                    </div>
+
+                    <!-- Department Timing Display -->
+                    <div id="timingDisplay" class="hidden mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-blue-800 font-medium">
+                            <i class="fas fa-clock mr-2"></i>
+                            Bus Timing: <span id="timingText"></span>
+                        </p>
+                    </div>
+
+                    <!-- Seat Selection Grid -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Select Your Seat</h3>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div id="seatGrid" class="grid grid-cols-4 md:grid-cols-8 gap-2 max-w-2xl mx-auto">
+                                <!-- Seats will be generated by JavaScript -->
+                            </div>
+                            <div class="flex justify-center mt-4 space-x-6 text-sm">
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-white border border-gray-300 rounded mr-2"></div>
+                                    <span>Available</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                                    <span>Selected</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                                    <span>Booked</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Book Now Button -->
+                    <div class="text-center">
+                        <button onclick="bookNow()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                            <i class="fas fa-check mr-2"></i>Book Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- View Bookings Section -->
+    <section id="bookings" class="py-16 px-4 bg-gray-50">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">View Bookings</h2>
+            
+            <div class="max-w-6xl mx-auto">
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap gap-4 justify-center mb-8">
+                    <button onclick="downloadCSV()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center">
+                        <i class="fas fa-download mr-2"></i>Download CSV
+                    </button>
+                    <button onclick="downloadPDF()" class="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center">
+                        <i class="fas fa-download mr-2"></i>Download PDF Ticket
+                    </button>
+                    <button onclick="clearAllBookings()" class="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center">
+                        <i class="fas fa-trash mr-2"></i>Clear All Bookings
+                    </button>
+                </div>
+
+                <!-- Bookings Table -->
+                <div id="bookingsContainer">
+                    <div class="text-center py-12">
+                        <i class="fas fa-bus text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-xl text-gray-500">No bookings yet. Book your first seat!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 px-4 bg-white">
+        <div class="container mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">About</h2>
+            <div class="max-w-4xl mx-auto">
+                <p class="text-lg text-gray-600 mb-12 text-center">
+                    The University Bus Reservation System is designed to simplify the process of booking bus seats for students and staff. 
+                    With an intuitive interface and real-time seat availability, managing your commute has never been easier.
+                </p>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center p-6 bg-blue-50 rounded-lg">
+                        <i class="fas fa-bus text-4xl text-blue-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Easy Booking</h3>
+                        <p class="text-gray-600">Simple and intuitive booking process with real-time seat availability</p>
+                    </div>
+                    <div class="text-center p-6 bg-green-50 rounded-lg">
+                        <i class="fas fa-clock text-4xl text-green-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Flexible Scheduling</h3>
+                        <p class="text-gray-600">Department-wise timing management for organized transportation</p>
+                    </div>
+                    <div class="text-center p-6 bg-purple-50 rounded-lg">
+                        <i class="fas fa-mobile-alt text-4xl text-purple-600 mb-4"></i>
+                        <h3 class="font-semibold text-lg mb-2">Digital Tickets</h3>
+                        <p class="text-gray-600">Export bookings as CSV and PDF for digital ticket management</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto text-center">
+            <p class="text-lg">
+                Developed by Saravana Priyan
+            </p>
+            <p class="text-sm mt-2 text-gray-400">
+                © 2024 University Bus Reservation System. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Department timings mapping
+        const departmentTimings = {
+            'Computer Science': '8:00 AM - 9:00 AM',
+            'Electronics': '9:15 AM - 10:15 AM',
+            'Mechanical': '10:30 AM - 11:30 AM',
+            'Civil': '11:45 AM - 12:45 PM',
+            'Electrical': '1:00 PM - 2:00 PM',
+            'Chemical': '2:15 PM - 3:15 PM',
+            'Biotechnology': '3:30 PM - 4:30 PM',
+            'Information Technology': '4:45 PM - 5:45 PM'
+        };
+
+        // Global state
+        let bookings = [];
+        let selectedSeat = '';
+        let bookedSeats = new Set();
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            generateSeats();
+            loadBookingsFromStorage();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+                const menu = document.getElementById('mobileMenu');
+                menu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu when clicking on links
+            document.querySelectorAll('#mobileMenu a').forEach(link => {
+                link.addEventListener('click', function() {
+                    document.getElementById('mobileMenu').classList.add('hidden');
+                });
+            });
+
+            // Update active nav link on scroll
+            window.addEventListener('scroll', updateActiveNavLink);
+        }
+
+        // Generate seat grid
+        function generateSeats() {
+            const seatGrid = document.getElementById('seatGrid');
+            seatGrid.innerHTML = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                for (let j = 1; j <= 4; j++) {
+                    const seatId = `${String.fromCharCode(64 + i)}${j}`;
+                    const seatButton = document.createElement('button');
+                    seatButton.className = 'seat p-3 rounded-lg font-medium bg-white text-gray-800 hover:bg-blue-100 border border-gray-300';
+                    seatButton.textContent = seatId;
+                    seatButton.onclick = () => selectSeat(seatId);
+                    seatButton.id = `seat-${seatId}`;
+                    seatGrid.appendChild(seatButton);
+                }
+            }
+        }
+
+        // Select a seat
+        function selectSeat(seatId) {
+            if (bookedSeats.has(seatId)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Seat Already Booked',
+                    text: `Seat ${seatId} is already booked. Please select another seat.`,
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            // Deselect previous seat
+            if (selectedSeat) {
+                const prevSeat = document.getElementById(`seat-${selectedSeat}`);
+                if (prevSeat) {
+                    prevSeat.className = 'seat p-3 rounded-lg font-medium bg-white text-gray-800 hover:bg-blue-100 border border-gray-300';
+                }
+            }
+
+            // Select new seat
+            if (selectedSeat === seatId) {
+                selectedSeat = '';
+            } else {
+                selectedSeat = seatId;
+                const currentSeat = document.getElementById(`seat-${seatId}`);
+                currentSeat.className = 'seat p-3 rounded-lg font-medium bg-green-500 text-white';
+            }
+        }
+
+        // Update timing display based on department selection
+        function updateTiming() {
+            const department = document.getElementById('department').value;
+            const timingDisplay = document.getElementById('timingDisplay');
+            const timingText = document.getElementById('timingText');
+
+            if (department && departmentTimings[department]) {
+                timingText.textContent = departmentTimings[department];
+                timingDisplay.classList.remove('hidden');
+            } else {
+                timingDisplay.classList.add('hidden');
+            }
+        }
+
+        // Book now function
+        function bookNow() {
+            const name = document.getElementById('name').value;
+            const registerNumber = document.getElementById('registerNumber').value;
+            const department = document.getElementById('department').value;
+            const from = document.getElementById('from').value;
+            const to = document.getElementById('to').value;
+            const date = document.getElementById('date').value;
+
+            // Validation
+            if (!name || !registerNumber || !department || !from || !to || !date || !selectedSeat) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Missing Information',
+                    text: 'Please fill all fields and select a seat',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            // Check if seat is already booked
+            if (bookedSeats.has(selectedSeat)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Seat Already Booked',
+                    text: `Seat ${selectedSeat} is already booked. Please select another seat.`,
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            // Create booking
+            const booking = {
+                id: Date.now().toString(),
+                name,
+                registerNumber,
+                department,
+                from,
+                to,
+                date,
+                seat: selectedSeat,
+                timing: departmentTimings[department]
+            };
+
+            // Add to bookings
+            bookings.push(booking);
+            bookedSeats.add(selectedSeat);
+
+            // Update UI
+            updateSeatUI(selectedSeat, 'booked');
+            displayBookings();
+            saveBookingsToStorage();
+
+            // Reset form
+            resetForm();
+
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Booking Successful!',
+                text: `Seat ${selectedSeat} has been booked for ${name}`,
+                confirmButtonColor: '#3b82f6',
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+
+        // Update seat UI
+        function updateSeatUI(seatId, status) {
+            const seat = document.getElementById(`seat-${seatId}`);
+            if (status === 'booked') {
+                seat.className = 'seat p-3 rounded-lg font-medium bg-red-500 text-white cursor-not-allowed';
+                seat.onclick = null;
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('name').value = '';
+            document.getElementById('registerNumber').value = '';
+            document.getElementById('department').value = '';
+            document.getElementById('from').value = '';
+            document.getElementById('to').value = '';
+            document.getElementById('date').value = '';
+            document.getElementById('timingDisplay').classList.add('hidden');
+            selectedSeat = '';
+        }
+
+        // Display bookings
+        function displayBookings() {
+            const container = document.getElementById('bookingsContainer');
+            
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-bus text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-xl text-gray-500">No bookings yet. Book your first seat!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let tableHTML = `
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-blue-600 text-white">
+                                <tr>
+                                    <th class="px-6 py-4 text-left">Name</th>
+                                    <th class="px-6 py-4 text-left">Register No</th>
+                                    <th class="px-6 py-4 text-left">Department</th>
+                                    <th class="px-6 py-4 text-left">From → To</th>
+                                    <th class="px-6 py-4 text-left">Date</th>
+                                    <th class="px-6 py-4 text-left">Seat</th>
+                                    <th class="px-6 py-4 text-left">Timing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            bookings.forEach((booking, index) => {
+                tableHTML += `
+                    <tr class="${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}">
+                        <td class="px-6 py-4">${booking.name}</td>
+                        <td class="px-6 py-4">${booking.registerNumber}</td>
+                        <td class="px-6 py-4">${booking.department}</td>
+                        <td class="px-6 py-4">${booking.from} → ${booking.to}</td>
+                        <td class="px-6 py-4">${booking.date}</td>
+                        <td class="px-6 py-4">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">
+                                ${booking.seat}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">${booking.timing}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        // Download CSV
+        function downloadCSV() {
+            if (bookings.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Bookings',
+                    text: 'There are no bookings to export',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            const headers = ['ID', 'Name', 'Register Number', 'Department', 'From', 'To', 'Date', 'Seat', 'Timing'];
+            const csvContent = [
+                headers.join(','),
+                ...bookings.map(booking => [
+                    booking.id,
+                    booking.name,
+                    booking.registerNumber,
+                    booking.department,
+                    booking.from,
+                    booking.to,
+                    booking.date,
+                    booking.seat,
+                    booking.timing
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `bus_bookings_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Download PDF
+        function downloadPDF() {
+            if (bookings.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Bookings',
+                    text: 'There are no bookings to generate PDF for',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Header
+            doc.setFontSize(20);
+            doc.text('University Bus Reservation System', 105, 20, { align: 'center' });
+            
+            // Date
+            doc.setFontSize(12);
+            doc.text(`Generated: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+            
+            // Bookings
+            let yPosition = 50;
+            doc.setFontSize(14);
+            doc.text('All Bookings:', 20, yPosition);
+            
+            yPosition += 10;
+            doc.setFontSize(10);
+            
+            bookings.forEach((booking, index) => {
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.text(`${index + 1}. ${booking.name} - Seat ${booking.seat}`, 20, yPosition);
+                doc.text(`   Reg: ${booking.registerNumber}`, 20, yPosition + 5);
+                doc.text(`   Dept: ${booking.department}`, 20, yPosition + 10);
+                doc.text(`   Route: ${booking.from} to ${booking.to}`, 20, yPosition + 15);
+                doc.text(`   Date: ${booking.date} | Time: ${booking.timing}`, 20, yPosition + 20);
+                
+                yPosition += 30;
+            });
+            
+            doc.save(`bus_tickets_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        // Clear all bookings
+        function clearAllBookings() {
+            if (bookings.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'No Bookings',
+                    text: 'There are no bookings to clear',
+                    confirmButtonColor: '#3b82f6'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'This will clear all bookings!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, clear all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    bookings = [];
+                    bookedSeats.clear();
+                    generateSeats();
+                    displayBookings();
+                    saveBookingsToStorage();
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cleared!',
+                        text: 'All bookings have been cleared',
+                        confirmButtonColor: '#3b82f6'
+                    });
+                }
+            });
+        }
+
+        // Local storage functions
+        function saveBookingsToStorage() {
+            localStorage.setItem('busBookings', JSON.stringify(bookings));
+            localStorage.setItem('bookedSeats', JSON.stringify([...bookedSeats]));
+        }
+
+        function loadBookingsFromStorage() {
+            const savedBookings = localStorage.getItem('busBookings');
+            const savedBookedSeats = localStorage.getItem('bookedSeats');
+            
+            if (savedBookings) {
+                bookings = JSON.parse(savedBookings);
+                displayBookings();
+            }
+            
+            if (savedBookedSeats) {
+                bookedSeats = new Set(JSON.parse(savedBookedSeats));
+                // Update seat UI to show booked seats
+                bookedSeats.forEach(seatId => {
+                    updateSeatUI(seatId, 'booked');
+                });
+            }
+        }
+
+        // Utility functions
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateActiveNavLink() {
+            const sections = ['home', 'booking', 'bookings', 'about'];
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        current = section;
+                    }
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('text-blue-600');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('text-blue-600');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
