@@ -1,70 +1,31 @@
-# University-Bus-Reservation-System
-A responsive University Bus Reservation system built with Vanilla JS and Tailwind CSS. Features interactive seat selection, PDF/CSV export, and local storage.
-🚌 University Bus Reservation System
-A single-page, fully responsive web application for booking university bus seats. This project is built with pure Vanilla JavaScript and Tailwind CSS, focusing on a clean UI and practical features like dynamic scheduling and ticket exporting.
+# University Bus Reservation - Backend
 
-The application is self-contained in a single index.html file, making it extremely portable and easy to use.
+This is a small Express backend using MySQL (mysql2) to store bus bookings for the provided frontend `UBR.html`.
 
-✨ Features
-Interactive Seat Selection: A visual, clickable grid to select available seats. Booked seats are locked, and the user's selection is highlighted.
+Features
+- Create bookings (POST /api/bookings)
+- List bookings (GET /api/bookings)
+- Delete all bookings (DELETE /api/bookings)
+- Get booked seats for a date (GET /api/bookedSeats?date=YYYY-MM-DD)
 
-Dynamic Timings: Bus timings automatically update based on the user's selected department.
+Quick start
+1. Install dependencies (already done if you ran earlier step):
 
-Responsive Design: A mobile-first design that looks great on all devices, complete with a collapsible mobile menu.
+   npm install
 
-Booking Management: View all current bookings in a clean, organized table.
+2. Create a MySQL database (example name `ubrs`) and set environment variables or copy `.env.example` to `.env` and update values.
 
-Data Export:
+   -- Example SQL:
+   CREATE DATABASE ubrs CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   USE ubrs;
+   -- Then run the `schema.sql` file to create the table (or let the server create it automatically):
 
-Download CSV: Export a list of all bookings as a .csv file.
+3. Start the server:
 
-Download PDF: Generate a PDF summary of all bookings or individual tickets using jsPDF.
+   node index.js
 
-Persistent Data: Bookings are saved to the browser's Local Storage, so data isn't lost on refresh.
+4. Open `UBR.html` in your browser. By default the server serves static files from the repository root and is CORS-enabled, so the frontend can call the APIs.
 
-Modern Alerts: Uses SweetAlert2 for clean, user-friendly notifications (e.g., success, error, confirmation).
-
-🚀 How to Use
-No build step or server is required.
-
-Clone this repository:
-
-Bash
-
-git clone https://github.com/your-username/unibus-reserve.git
-Navigate to the directory:
-
-Bash
-
-cd unibus-reserve
-Open the UBR.html (or index.html) file directly in your web browser.
-
-That's it! You can start booking seats immediately.
-
-🛠️ Technologies Used
-HTML5: Semantic markup for the application structure.
-
-Tailwind CSS (via CDN): A utility-first CSS framework for rapid UI development.
-
-Vanilla JavaScript (ES6+): Handles all logic, including:
-
-DOM manipulation
-
-Event handling
-
-Seat grid generation
-
-Form validation
-
-Local Storage management
-
-Libraries (via CDN):
-
-Font Awesome: For all icons.
-
-SweetAlert2: For beautiful, responsive alerts.
-
-jsPDF: For client-side PDF generation.
-
-Credits
-Developed by Saravana Priyan as a project to demonstrate modern frontend development using minimal dependencies.
+Notes
+- The server attempts to create the `bookings` table on startup. If the database is unreachable you'll see logged errors — ensure MySQL is running and credentials are correct.
+- This is intentionally minimal. If you want authentication, validation, transactions, or concurrency guards (to avoid double-booking seats), we can add them next.
